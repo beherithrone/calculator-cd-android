@@ -1,0 +1,61 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
+
+    defaultConfig {
+        applicationId "uk.sky.paveljacko.calculator"
+        minSdkVersion 16
+        targetSdkVersion 23
+        versionCode computeVersionCode()
+        versionName computeVersionName()
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    testCompile "org.mockito:mockito-core:1.+"
+    compile 'com.android.support:appcompat-v7:23.0.1'
+
+    androidTestCompile 'com.android.support:support-annotations:23.0.1'
+    androidTestCompile 'com.android.support.test:runner:0.4.1'
+    androidTestCompile 'com.android.support.test:rules:0.4.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.1'
+}
+
+def computeVersionCode() {
+    try {
+        def p = Runtime.getRuntime().exec("git rev-list --all --count")
+
+        def result = p.waitFor()
+        if (result != 0) {
+            return 0 // no git revisions
+        }
+        return p.getInputStream().readLines().get(0).toInteger()
+    } catch (ignored) {
+        return 0;
+    }
+}
+
+def computeVersionName() {
+    def command = Runtime.getRuntime().exec("git rev-parse --short HEAD")
+    def result = command.waitFor()
+    return (result == 0) ? computeVersionCode() + "-" + command.inputStream.text.trim() : "nogit"
+}
+
+task printVersion() {
+    print "\n**************** MOBILE BUILD VERSION ***********\n";
+    print "Version Code: " + computeVersionCode() + "\n";
+    print "Version Name: " + computeVersionName() + "\n";
+    print "*************************************************\n\n"
+}
